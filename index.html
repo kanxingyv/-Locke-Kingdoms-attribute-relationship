@@ -45,18 +45,19 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 8px;
         }
 
         .center-type-name {
-            font-size: 18px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 60px);
+            font-size: 20px;
             font-weight: 700;
             color: #333;
-            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
             z-index: 15;
+            transition: color 0.3s ease;
         }
 
         .icon-wrapper {
@@ -236,6 +237,7 @@
 <body>
     <div class="circle-container" id="circleContainer">
         <div class="center-circle"></div>
+        <div class="center-type-name" id="centerTypeName"></div>
     </div>
 
     <div class="info-panel" id="infoPanel">
@@ -357,6 +359,7 @@
 
         const container = document.getElementById('circleContainer');
         const infoPanel = document.getElementById('infoPanel');
+        const centerTypeName = document.getElementById('centerTypeName');
         
         let selectedType = null;
         let iconWrappers = [];
@@ -401,16 +404,18 @@
             const index = allTypes.indexOf(typeName);
             
             const centerCircle = document.querySelector('.center-circle');
-            centerCircle.style.backgroundImage = `url(image/icon-type-${index + 1}.png)`;
+            const imgPath = `image/icon-type-${index + 1}.png`;
+            centerCircle.style.backgroundImage = `url(${imgPath})`;
             
-            const existingTypeName = centerCircle.querySelector('.center-type-name');
-            if (existingTypeName) {
-                existingTypeName.remove();
-            }
-            const typeNameElement = document.createElement('div');
-            typeNameElement.className = 'center-type-name';
-            typeNameElement.textContent = typeName;
-            centerCircle.appendChild(typeNameElement);
+            centerTypeName.textContent = typeName;
+            
+            // 获取图标颜色并设置文字颜色
+            const tempImg = new Image();
+            tempImg.src = imgPath;
+            tempImg.onload = () => {
+                const color = getDominantColor(tempImg);
+                centerTypeName.style.color = color;
+            };
             
             infoPanel.classList.add('active');
             
@@ -419,6 +424,51 @@
             setTimeout(() => {
                 infoPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
+        }
+
+        function getDominantColor(img) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 50;
+            canvas.height = 50;
+            ctx.drawImage(img, 0, 0, 50, 50);
+            
+            const imageData = ctx.getImageData(0, 0, 50, 50);
+            const data = imageData.data;
+            
+            let r = 0, g = 0, b = 0, count = 0;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                // 跳过透明像素
+                if (data[i + 3] > 128) {
+                    r += data[i];
+                    g += data[i + 1];
+                    b += data[i + 2];
+                    count++;
+                }
+            }
+            
+            if (count === 0) return '#333333';
+            
+            r = Math.round(r / count);
+            g = Math.round(g / count);
+            b = Math.round(b / count);
+            
+            // 调整亮度，确保文字清晰可读
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            if (brightness > 150) {
+                // 颜色较亮，加深颜色
+                r = Math.max(0, r - 80);
+                g = Math.max(0, g - 80);
+                b = Math.max(0, b - 80);
+            } else if (brightness < 80) {
+                // 颜色较暗，提亮颜色
+                r = Math.min(255, r + 60);
+                g = Math.min(255, g + 60);
+                b = Math.min(255, b + 60);
+            }
+            
+            return `rgb(${r}, ${g}, ${b})`;
         }
 
         function updateInfo(selectedType) {
@@ -527,6 +577,9 @@
         const grassWrapper = iconWrappers[0];
         if (grassWrapper) {
             selectType('草', grassWrapper);
+        } else {
+            // 如果没有选中草系，设置默认颜色
+            centerTypeName.style.color = '#56ab2f';
         }
     </script>
 </body>
