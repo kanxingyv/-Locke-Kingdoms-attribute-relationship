@@ -4,12 +4,11 @@
 
 ## 📸 效果预览
 
-![效果预览](preview-image.png)
+![效果预览](image/preview-image.png)
 
 *点击属性图标查看详细的克制关系*
 
 > 💡 **提示**: 如果图片无法显示，请在浏览器中打开 `index.html` 查看实际效果。
-> 你也可以将应用截图保存为 `preview-image.png` 放在项目根目录。
 
 ## ✨ 功能特点
 
