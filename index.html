@@ -45,6 +45,18 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+        }
+
+        .center-type-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
+            z-index: 15;
         }
 
         .icon-wrapper {
@@ -263,75 +275,75 @@
         const TYPE_DATA = {
             "草": { 
                 "克制": ["水","地"], 
-                "微弱": ["火","机械","毒","翼","虫","龙"] 
+                "抵抗": ["火","机械","毒","翼","虫","龙"] 
             },
             "水": { 
                 "克制": ["火","地","机械"], 
-                "微弱": ["冰","草","龙"] 
+                "抵抗": ["冰","草","龙"] 
             },
             "火": { 
                 "克制": ["草","冰","机械"], 
-                "微弱": ["地","龙","水"] 
+                "抵抗": ["地","龙","水"] 
             },
             "冰": { 
                 "克制": ["草","地","龙","翼"], 
-                "微弱": ["火","冰","机械"] 
+                "抵抗": ["火","冰","机械"] 
             },
             "机械": { 
                 "克制": ["冰","萌","地"], 
-                "微弱": ["电","水","火","机械"] 
+                "抵抗": ["电","水","火","机械"] 
             },
             "普": { 
                 "克制": [], 
-                "微弱": ["机械","地","幽灵"] 
+                "抵抗": ["机械","地","幽灵"] 
             },
             "武": { 
                 "克制": ["冰","机械","普","地","恶"], 
-                "微弱": ["毒","翼","萌","虫","幽灵","幻"] 
+                "抵抗": ["毒","翼","萌","虫","幽灵","幻"] 
             },
             "毒": { 
                 "克制": ["萌","草"], 
-                "微弱": ["地","幽灵","毒","机械"] 
+                "抵抗": ["地","幽灵","毒","机械"] 
             },
             "翼": { 
                 "克制": ["武","虫","草"], 
-                "微弱": ["地","龙","电","机械"] 
+                "抵抗": ["地","龙","电","机械"] 
             },
             "萌": { 
                 "克制": ["武","龙","恶"], 
-                "微弱": ["毒","火","机械"] 
+                "抵抗": ["毒","火","机械"] 
             },
             "虫": { 
                 "克制": ["恶","草","幻"], 
-                "微弱": ["火","机械","武","毒","翼","萌","幽灵"] 
+                "抵抗": ["火","机械","武","毒","翼","萌","幽灵"] 
             },
             "地": { 
                 "克制": ["电","火","冰","毒"], 
-                "微弱": ["草","武"] 
+                "抵抗": ["草","武"] 
             },
             "幽灵": { 
                 "克制": ["幽灵","光","幻"], 
-                "微弱": ["恶","普"] 
+                "抵抗": ["恶","普"] 
             },
             "龙": { 
                 "克制": ["龙"], 
-                "微弱": ["机械"] 
+                "抵抗": ["机械"] 
             },
             "恶": { 
                 "克制": ["毒","萌","幽灵"], 
-                "微弱": ["恶","光","武"] 
+                "抵抗": ["恶","光","武"] 
             },
             "光": { 
                 "克制": ["幽灵","恶"], 
-                "微弱": ["草","冰"] 
+                "抵抗": ["草","冰"] 
             },
             "电": { 
                 "克制": ["水","翼"], 
-                "微弱": ["地","龙","电","草"] 
+                "抵抗": ["地","龙","电","草"] 
             },
             "幻": { 
                 "克制": ["武","毒"], 
-                "微弱": ["光","幻","机械"] 
+                "抵抗": ["光","幻","机械"] 
             }
         };
 
@@ -381,13 +393,24 @@
 
         function selectType(typeName, wrapper) {
             iconWrappers.forEach(w => w.classList.remove('selected'));
-            wrapper.classList.add('selected');
+            if (wrapper) {
+                wrapper.classList.add('selected');
+            }
             
             selectedType = typeName;
             const index = allTypes.indexOf(typeName);
             
             const centerCircle = document.querySelector('.center-circle');
             centerCircle.style.backgroundImage = `url(image/icon-type-${index + 1}.png)`;
+            
+            const existingTypeName = centerCircle.querySelector('.center-type-name');
+            if (existingTypeName) {
+                existingTypeName.remove();
+            }
+            const typeNameElement = document.createElement('div');
+            typeNameElement.className = 'center-type-name';
+            typeNameElement.textContent = typeName;
+            centerCircle.appendChild(typeNameElement);
             
             infoPanel.classList.add('active');
             
@@ -416,7 +439,7 @@
                 list1.appendChild(item);
             });
             
-            data.微弱.forEach(type => {
+            data.抵抗.forEach(type => {
                 const item = createTypeItem(type, false);
                 list2.appendChild(item);
             });
@@ -435,7 +458,7 @@
             
             const typesThatResistSelected = [];
             Object.keys(TYPE_DATA).forEach(type => {
-                if (TYPE_DATA[type].微弱.includes(selectedType)) {
+                if (TYPE_DATA[type].抵抗.includes(selectedType)) {
                     typesThatResistSelected.push(type);
                 }
             });
@@ -449,7 +472,7 @@
             const attackerData = TYPE_DATA[attacker];
             const defenderData = TYPE_DATA[defender];
             
-            const attackerToDefender = attackerData.微弱.includes(defender);
+            const attackerToDefender = attackerData.抵抗.includes(defender);
             const defenderToAttacker = defenderData.克制.includes(attacker);
             
             return attackerToDefender && defenderToAttacker;
@@ -499,6 +522,12 @@
         });
 
         init();
+
+        // 默认选中草系
+        const grassWrapper = iconWrappers[0];
+        if (grassWrapper) {
+            selectType('草', grassWrapper);
+        }
     </script>
 </body>
 </html>
